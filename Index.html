@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>XO Game Admin</title>
+  <style>
+    /* Admin panel styles */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>User Balance Control</h1>
+    
+    <div class="control-panel">
+      <input type="text" id="adminUserId" placeholder="Enter User ID">
+      <button onclick="loadUser()">Load User</button>
+      
+      <div id="userInfo" style="display:none">
+        <h3>User: <span id="displayUserId"></span></h3>
+        <p>Current Balance: <span id="displayBalance">0</span> BIRR</p>
+        
+        <input type="number" id="adjustAmount" value="100" min="1">
+        <button onclick="adjustBalance('add')">Add Funds</button>
+        <button onclick="adjustBalance('subtract')">Subtract Funds</button>
+        <button onclick="setBalance()">Set Balance</button>
+      </div>
+    </div>
+    
+    <div class="all-users">
+      <h2>All Users</h2>
+      <div id="usersList"></div>
+    </div>
+  </div>
+
+  <script>
+    // Load all users
+    function loadAllUsers() {
+      const balances = JSON.parse(localStorage.getItem('userBalances') || {});
+      const userList = document.getElementById('usersList');
+      userList.innerHTML = '';
+      
+      for (const [userId, balance] of Object.entries(balances)) {
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-card';
+        userDiv.innerHTML = `
+          <p>${userId}</p>
+          <p>${balance} BIRR</p>
+          <button onclick="loadSpecificUser('${userId}')">Select</button>
+        `;
+        userList.appendChild(userDiv);
+      }
+    }
+    
+    // Load specific user
+    function loadSpecificUser(userId) {
+      document.getElementById('adminUserId').value = userId;
+      loadUser();
+    }
+    
+    // Load user data
+    function loadUser() {
+      const userId = document.getElementById('adminUserId').value.trim();
+      if (!userId) return;
+      
+      const balances = JSON.parse(localStorage.getItem('userBalances') || {});
+      document.getElementById('displayUserId').textContent = userId;
+      document.getElementById('displayBalance').textContent = balances[userId] || 0;
+      document.getElementById('userInfo').style.display = 'block';
+    }
+    
+    // Balance adjustment functions
+    function adjustBalance(action) {
+      const userId = document.getElementById('adminUserId').value.trim();
+      const amount = parseInt(document.getElementById('adjustAmount').value) || 0;
+      const balances = JSON.parse(localStorage.getItem('userBalances') || {});
+      
+      if (!userId) return;
+      
+      if (action === 'add') {
+        balances[userId] = (balances[userId] || 0) + amount;
+      } else {
+        balances[userId] = Math.max(0, (balances[userId] || 0) - amount);
+      }
+      
+      localStorage.setItem('userBalances', JSON.stringify(balances));
+      loadUser();
+      loadAllUsers();
+    }
+    
+    function setBalance() {
+      const userId = document.getElementById('adminUserId').value.trim();
+      const amount = parseInt(document.getElementById('adjustAmount').value) || 0;
+      const balances = JSON.parse(localStorage.getItem('userBalances') || {});
+      
+      if (!userId) return;
+      
+      balances[userId] = Math.max(0, amount);
+      localStorage.setItem('userBalances', JSON.stringify(balances));
+      loadUser();
+      loadAllUsers();
+    }
+    
+    // Initialize
+    loadAllUsers();
+  </script>
+</body>
+</html>
