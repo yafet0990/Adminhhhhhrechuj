@@ -1,106 +1,201 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>XO Game Admin</title>
-  <style>
-    /* Admin panel styles */
-  </style>
+    <title>Admin Dashboard</title>
+    <!-- Add Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .admin-container {
+            max-width: 500px;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2.2rem;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            width: 60px;
+            height: 3px;
+            background: #667eea;
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-icon {
+            position: relative;
+        }
+
+        .input-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        .input-icon input {
+            padding-left: 40px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-message {
+            background: #48bb78;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .admin-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>User Balance Control</h1>
-    
-    <div class="control-panel">
-      <input type="text" id="adminUserId" placeholder="Enter User ID">
-      <button onclick="loadUser()">Load User</button>
-      
-      <div id="userInfo" style="display:none">
-        <h3>User: <span id="displayUserId"></span></h3>
-        <p>Current Balance: <span id="displayBalance">0</span> BIRR</p>
-        
-        <input type="number" id="adjustAmount" value="100" min="1">
-        <button onclick="adjustBalance('add')">Add Funds</button>
-        <button onclick="adjustBalance('subtract')">Subtract Funds</button>
-        <button onclick="setBalance()">Set Balance</button>
-      </div>
-    </div>
-    
-    <div class="all-users">
-      <h2>All Users</h2>
-      <div id="usersList"></div>
-    </div>
-  </div>
+    <div class="admin-container">
+        <h1>Balance Manager</h1>
+        <form id="balanceForm">
+            <div class="form-group input-icon">
+                <i class="fas fa-user"></i>
+                <input type="text" id="userId" placeholder="User ID" required>
+            </div>
+            
+            <div class="form-group input-icon">
+                <i class="fas fa-dollar-sign"></i>
+                <input type="number" id="amount" placeholder="Amount" step="0.01" required>
+            </div>
 
-  <script>
-    // Load all users
-    function loadAllUsers() {
-      const balances = JSON.parse(localStorage.getItem('userBalances') || {});
-      const userList = document.getElementById('usersList');
-      userList.innerHTML = '';
-      
-      for (const [userId, balance] of Object.entries(balances)) {
-        const userDiv = document.createElement('div');
-        userDiv.className = 'user-card';
-        userDiv.innerHTML = `
-          <p>${userId}</p>
-          <p>${balance} BIRR</p>
-          <button onclick="loadSpecificUser('${userId}')">Select</button>
-        `;
-        userList.appendChild(userDiv);
-      }
-    }
-    
-    // Load specific user
-    function loadSpecificUser(userId) {
-      document.getElementById('adminUserId').value = userId;
-      loadUser();
-    }
-    
-    // Load user data
-    function loadUser() {
-      const userId = document.getElementById('adminUserId').value.trim();
-      if (!userId) return;
-      
-      const balances = JSON.parse(localStorage.getItem('userBalances') || {});
-      document.getElementById('displayUserId').textContent = userId;
-      document.getElementById('displayBalance').textContent = balances[userId] || 0;
-      document.getElementById('userInfo').style.display = 'block';
-    }
-    
-    // Balance adjustment functions
-    function adjustBalance(action) {
-      const userId = document.getElementById('adminUserId').value.trim();
-      const amount = parseInt(document.getElementById('adjustAmount').value) || 0;
-      const balances = JSON.parse(localStorage.getItem('userBalances') || {});
-      
-      if (!userId) return;
-      
-      if (action === 'add') {
-        balances[userId] = (balances[userId] || 0) + amount;
-      } else {
-        balances[userId] = Math.max(0, (balances[userId] || 0) - amount);
-      }
-      
-      localStorage.setItem('userBalances', JSON.stringify(balances));
-      loadUser();
-      loadAllUsers();
-    }
-    
-    function setBalance() {
-      const userId = document.getElementById('adminUserId').value.trim();
-      const amount = parseInt(document.getElementById('adjustAmount').value) || 0;
-      const balances = JSON.parse(localStorage.getItem('userBalances') || {});
-      
-      if (!userId) return;
-      
-      balances[userId] = Math.max(0, amount);
-      localStorage.setItem('userBalances', JSON.stringify(balances));
-      loadUser();
-      loadAllUsers();
-    }
-    
-    // Initialize
-    loadAllUsers();
-  </script>
+            <button type="submit">
+                <i class="fas fa-coins"></i> Add Funds
+            </button>
+        </form>
+        <div class="success-message" id="successMessage"></div>
+    </div>
+
+    <script>
+        document.getElementById('balanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const userId = document.getElementById('userId').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const successMessage = document.getElementById('successMessage');
+
+            if (!userId || isNaN(amount)) {
+                alert("Please fill all fields correctly!");
+                return;
+            }
+
+            const storageKey = `user_${userId}_balance`;
+            const currentBalance = parseFloat(localStorage.getItem(storageKey)) || 0;
+            const newBalance = currentBalance + amount;
+            
+            localStorage.setItem(storageKey, newBalance.toFixed(2));
+            
+            // Show success message
+            successMessage.style.display = 'block';
+            successMessage.textContent = `✅ Success! Added $${amount.toFixed(2)} to ${userId}\nNew balance: $${newBalance.toFixed(2)}`;
+            
+            // Reset form
+            document.getElementById('balanceForm').reset();
+            
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        });
+    </script>
 </body>
-</html>
+  </html>
